@@ -21,17 +21,24 @@
             android:textSize="22sp"
             android:hint="Enter a coordinate" />
 
+
         <Button
             android:id="@+id/btn_add_cord"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Add Coordinate" />
 
+        <Button
+            android:id="@+id/btn_save_data"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Data" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_cord_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
+
 
     </LinearLayout>
 
