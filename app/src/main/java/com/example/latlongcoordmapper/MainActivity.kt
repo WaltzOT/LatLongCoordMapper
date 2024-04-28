@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
         setContentView(R.layout.activity_main)
 
         val cordListRV: RecyclerView = findViewById(R.id.rv_cord_list)
-        val cordEntryET: EditText = findViewById(R.id.et_cord_entry)
+        //val cordEntryET: EditText = findViewById(R.id.et_cord_entry)
         val addCordBtn: Button = findViewById(R.id.btn_add_cord)
         val coordinatorLayout: CoordinatorLayout = findViewById(R.id.coordinator_layout)
 
@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
             val coordinates = "Lat=${location?.latitude} Long=${location?.longitude}"
             val cordListRV: RecyclerView = findViewById(R.id.rv_cord_list)
             val adapter = cordListRV.adapter as CordAdapter
-            adapter.addCord(Cord(0, coordinates))
+            adapter.addCord(Cord(location?.latitude, location?.longitude , coordinates))
             cordListRV.scrollToPosition(0)
         }
     }
