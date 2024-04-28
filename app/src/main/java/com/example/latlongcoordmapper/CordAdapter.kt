@@ -23,6 +23,10 @@ class CordAdapter : RecyclerView.Adapter<CordAdapter.CordViewHolder>(){
         return cord
     }
 
+    fun getAllCords(): MutableList<Cord>{
+        return cords
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CordViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.cord_list_item, parent, false)
