@@ -1,6 +1,7 @@
 package com.example.latlongcoordmapper
 
 data class Cord(
-    val id: Int,
+    val lat: Double?,
+    val long: Double?,
     val text: String
 )
