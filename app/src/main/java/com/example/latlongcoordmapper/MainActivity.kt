@@ -138,18 +138,35 @@ class MainActivity : AppCompatActivity(), LocationListener {
     }
 
     private fun getLocation(adapter: CordAdapter) {
-        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionCode)
         } else {
-            //locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0F, this)
-            var location: Location? = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-            val coordinates = "Lat=${location?.latitude} Long=${location?.longitude}"
-            val cordListRV: RecyclerView = findViewById(R.id.rv_cord_list)
-            val adapter = cordListRV.adapter as CordAdapter
-            adapter.addCord(Cord(location?.latitude, location?.longitude , coordinates))
-            cordListRV.scrollToPosition(0)
+            val executor = ContextCompat.getMainExecutor(this)
+            locationManager.getCurrentLocation(LocationManager.GPS_PROVIDER, null, executor, { location ->
+                if (location != null) {
+                    val coordinates = "Lat=${location.latitude} Long=${location.longitude}"
+                    adapter.addCord(Cord(location.latitude, location.longitude, coordinates))
+                    val cordListRV: RecyclerView = findViewById(R.id.rv_cord_list)
+                    cordListRV.scrollToPosition(0)
+                } else {
+                    Toast.makeText(this, "Location not available", Toast.LENGTH_SHORT).show()
+                }
+            })
         }
     }
+//    private fun getLocation(adapter: CordAdapter) {
+//        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
+//            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionCode)
+//        } else {
+//            //locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0F, this)
+//            var location: Location? = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+//            val coordinates = "Lat=${location?.latitude} Long=${location?.longitude}"
+//            val cordListRV: RecyclerView = findViewById(R.id.rv_cord_list)
+//            val adapter = cordListRV.adapter as CordAdapter
+//            adapter.addCord(Cord(location?.latitude, location?.longitude , coordinates))
+//            cordListRV.scrollToPosition(0)
+//        }
+//    }
 
     override fun onLocationChanged(location: Location) {
         val coordinates = "Lat=${location.latitude} Long=${location.longitude}"
