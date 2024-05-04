@@ -30,6 +30,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
     private lateinit var dataList: MutableList<Cord>
     private val locationPermissionCode = 2
     private val CREATE_FILE = 101
+    private var currentLocation: Location? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +50,8 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
         // Location Manager
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        checkPermissionAndStartLocationUpdates()
 
         val itemTouchCallback = object : ItemTouchHelper.SimpleCallback(
             0,
@@ -80,7 +83,11 @@ class MainActivity : AppCompatActivity(), LocationListener {
         ItemTouchHelper(itemTouchCallback).attachToRecyclerView(cordListRV)
 
         addCordBtn.setOnClickListener {
-            getLocation(adapter)
+            currentLocation?.let { location ->
+                val coordinates = "Lat=${location.latitude} Long=${location.longitude}"
+                adapter.addCord(Cord(location.latitude, location.longitude, coordinates))
+                cordListRV.scrollToPosition(0)
+            } ?: Toast.makeText(this, "Location not available", Toast.LENGTH_SHORT).show()
         }
 
         saveDataBtn.setOnClickListener {
@@ -92,8 +99,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
         //var dataList: MutableList<Cord> = adapter.getAllCords()
         dataList = adapter.getAllCords()
         createFile()
-
-
     }
 
     private fun MutableList<Cord>.toCsvString(): String{
@@ -137,53 +142,59 @@ class MainActivity : AppCompatActivity(), LocationListener {
         return dataList.toCsvString()
     }
 
-    private fun getLocation(adapter: CordAdapter) {
+    override fun onLocationChanged(location: Location) {
+        currentLocation = location
+    }
+
+    private fun checkPermissionAndStartLocationUpdates() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionCode)
         } else {
-            val executor = ContextCompat.getMainExecutor(this)
-            locationManager.getCurrentLocation(LocationManager.GPS_PROVIDER, null, executor, { location ->
-                if (location != null) {
-                    val coordinates = "Lat=${location.latitude} Long=${location.longitude}"
-                    adapter.addCord(Cord(location.latitude, location.longitude, coordinates))
-                    val cordListRV: RecyclerView = findViewById(R.id.rv_cord_list)
-                    cordListRV.scrollToPosition(0)
-                } else {
-                    Toast.makeText(this, "Location not available", Toast.LENGTH_SHORT).show()
-                }
-            })
+            startLocationUpdates()
         }
     }
-//    private fun getLocation(adapter: CordAdapter) {
-//        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
-//            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionCode)
-//        } else {
-//            //locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0F, this)
-//            var location: Location? = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-//            val coordinates = "Lat=${location?.latitude} Long=${location?.longitude}"
-//            val cordListRV: RecyclerView = findViewById(R.id.rv_cord_list)
-//            val adapter = cordListRV.adapter as CordAdapter
-//            adapter.addCord(Cord(location?.latitude, location?.longitude , coordinates))
-//            cordListRV.scrollToPosition(0)
-//        }
-//    }
 
-    override fun onLocationChanged(location: Location) {
-        val coordinates = "Lat=${location.latitude} Long=${location.longitude}"
-        val cordListRV: RecyclerView = findViewById(R.id.rv_cord_list)
-        val adapter = cordListRV.adapter as CordAdapter
-        adapter.addCord(Cord(location?.latitude, location?.longitude , coordinates))
-        cordListRV.scrollToPosition(0)
+    private fun startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
+        locationManager.requestLocationUpdates(
+            LocationManager.GPS_PROVIDER,
+            1000, // Interval in milliseconds
+            0f, // Distance in meters
+            this
+        )
     }
+
+
+    private fun requestLocationUpdates() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 0.0001f, this)
+        } else {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionCode)
+        }
+    }
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == locationPermissionCode) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show()
-            }
-            else {
-                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show()
-            }
+        if (requestCode == locationPermissionCode && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            startLocationUpdates()
+        } else {
+            Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show()
         }
     }
 
