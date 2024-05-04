@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">LatLongCoordMapper</string>
+    <string name="download_data_string">Download Data</string>
+    <string name="clear_data_string">Clear Data</string>
 </resources>

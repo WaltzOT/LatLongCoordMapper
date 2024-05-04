@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.navigation.ui.AppBarConfiguration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -28,6 +29,7 @@ import java.io.FileOutputStream
 class MainActivity : AppCompatActivity(), LocationListener {
     private lateinit var locationManager: LocationManager
     private lateinit var dataList: MutableList<Cord>
+    private lateinit var appBarConfig: AppBarConfiguration
     private val locationPermissionCode = 2
     private val CREATE_FILE = 101
     private var currentLocation: Location? = null
@@ -175,7 +177,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
         locationManager.requestLocationUpdates(
             LocationManager.GPS_PROVIDER,
             1000, // Interval in milliseconds
-            0f, // Distance in meters
+            0.0001f, // Distance in meters
             this
         )
     }
